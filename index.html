@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Маме ❤️</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #0b0b0b;
+            font-family: 'Courier New', Courier, monospace;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* Эффект шума старой пленки */
+        .noise {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 50%, rgba(0,0,0,0.4)), url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noise"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noise)" opacity="0.05"/%3E%3C/svg%3E');
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        /* Заставка */
+        #start-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #121212;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 1s ease;
+        }
+        #start-btn {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            background: transparent;
+            border: 2px solid #fff;
+            color: #fff;
+            cursor: pointer;
+            font-family: inherit;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        #start-btn:hover {
+            background: #fff;
+            color: #000;
+            box-shadow: 0 0 15px rgba(255,255,255,0.4);
+        }
+
+        /* Основной контейнер слайдшоу */
+        #edit-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Слайды с фото */
+        .slide {
+            position: absolute;
+            width: 85%;
+            max-width: 450px;
+            height: auto;
+            aspect-ratio: 3/4;
+            background: #fff;
+            padding: 15px 15px 60px 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            opacity: 0;
+            transform: scale(0.9) rotate(0deg);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: sepia(0.2) contrast(0.95);
+        }
+
+        /* Классы состояний слайдов для имитации эдита */
+        .slide.active {
+            opacity: 1;
+            transform: scale(1.05) rotate(-2deg);
+            z-index: 5;
+        }
+        .slide.prev {
+            opacity: 0.4;
+            transform: scale(0.9) rotate(5deg) translate3d(50px, -20px, 0);
+            z-index: 3;
+        }
+
+        /* Субтитры */
+        #lyrics-container {
+            position: absolute;
+            bottom: 8%;
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+            z-index: 20;
+            min-height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #lyrics {
+            font-size: 1.1rem;
+            line-height: 1.5;
+            font-weight: bold;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+            letter-spacing: 1px;
+            transition: opacity 0.3s ease;
+        }
+        .highlight {
+            color: #ff4d4d;
+            text-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
+        }
+
+        /* Финал */
+        #final-screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            z-index: 1;
+            transition: opacity 2s ease;
+        }
+        #final-text {
+            font-size: 2rem;
+            text-align: center;
+            color: #ff4d4d;
+            text-shadow: 0 0 20px rgba(255,77,77,0.6);
+            font-weight: bold;
+        }
+
+        /* Сердечки */
+        .heart {
+            position: absolute;
+            color: #ff4d4d;
+            font-size: 20px;
+            pointer-events: none;
+            animation: floatUp 4s linear infinite;
+            opacity: 0;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="noise"></div>
+
+    <div id="start-screen">
+        <button id="start-btn">ВКЛЮЧИТЬ ВОСПОМИНАНИЯ</button>
+    </div>
+
+    <div id="edit-container">
+        <!-- Слайды (нейросеть сгенерирует структуру под твои фото) -->
+        <div class="slide active" id="slide1"><img src="images/photo1.jpg" alt="Маленький"></div>
+        <div class="slide" id="slide2"><img src="images/photo2.jpg" alt="Маленький"></div>
+        <div class="slide" id="slide3"><img src="images/photo3.jpg" alt="Маленький"></div>
+        <div class="slide" id="slide4"><img src="images/photo4.jpg" alt="Маленький"></div>
+        <div class="slide" id="slide5"><img src="images/photo5.jpg" alt="Маленький"></div>
+        <div class="slide" id="slide6"><img src="images/photo6.jpg" alt="Маленький"></div>
+        <div class="slide" id="slide7"><img src="images/photo7.jpg" alt="Маленький"></div>
+        <div class="slide" id="slide8"><img src="images/photo8.jpg" alt="Маленький"></div>
+        <div class="slide" id="slide9"><img src="images/photo9.jpg" alt="Маленький"></div>
+        <div class="slide" id="slide10"><img src="images/photo10.jpg" alt="Маленький"></div>
+        <div class="slide" id="slide11"><img src="images/photo11.jpg" alt="Маленький"></div>
+        <div class="slide" id="slide12"><img src="images/photo12.jpg" alt="Маленький"></div>
+        <div class="slide" id="slide13"><img src="images/photo13.jpg" alt="Маленький"></div>
+        <div class="slide" id="slide14"><img src="images/photo14.jpg" alt="Маленький"></div>
+        <div class="slide" id="slide15"><img src="images/photo15.jpg" alt="Маленький"></div>
+
+        <div id="lyrics-container">
+            <p id="lyrics">Нажми на кнопку выше...</p>
+        </div>
+
+        <div id="final-screen">
+            <h1 id="final-text">Мама, я тебя люблю! ❤️</h1>
+        </div>
+    </div>
+
+    <!-- Тег аудио для музыки -->
+    <audio id="main-track" src="audio/daitetank-malenkiy.mp3"></audio>
+
+    <script>
+        const startScreen = document.getElementById('start-screen');
+        const startBtn = document.getElementById('start-btn');
+        const audio = document.getElementById('main-track');
+        const lyricsText = document.getElementById('lyrics');
+        const finalScreen = document.getElementById('final-screen');
+
+        // База таймкодов эдита
+        const timeline = [
+            { time: 0, img: 1, text: "..." },
+            { time: 8, img: 2, text: "Я снова маленький: солнце яркое, <br><span class='highlight'>мама опять сильнее всех в мире</span>" },
+            { time: 13, img: 3, text: "Я снова боюсь собак <br>и оставаться один в квартире" },
+            { time: 17, img: 4, text: "А деревья такие большие, <br>незнакомые плохие слова" },
+            { time: 21, img: 5, text: "Поиграем в прятки? <br>Мне, как раньше, по пояс трава" },
+            { time: 26, img: 6, text: "Это я не достаю до пола ногами / Или пол до моих ног не достаёт?" },
+            { time: 35, img: 7, text: "Я стал сильнее, и теперь я не лягу к маме / Но чудовища не пришли..." },
+            { time: 44, img: 8, text: "Я ещё не разучился радоваться: <br>рисую осколками кирпичей" },
+            { time: 52, img: 9, text: "В резиновых сапогах не страшно <br>мерить весной ногами ручей" },
+            { time: 57, img: 10, text: "Красные яблоки падают вниз, <br>когда ветер сильнее дует" },
+            { time: 101, img: 11, text: "<span class='highlight'>Тише, меня зовут есть!</span> <br>Я не голоден, но никого не волнует" },
+            { time: 105, img: 12, text: "Те, кого я считал врагами <br>Просто делают мёд, просто делают мёд..." },
+            { time: 113, img: 13, text: "Я стал сильнее, и теперь я не лягу к маме..." },
+            { time: 122, img: 14, text: "Снова зима: меня везут на санках, <br>а дома тепло и пахнет ёлкой" },
+            { time: 140, img: 15, text: "Вот моё отражение в шаре... <br>Я сижу на скрипучем стуле" },
+            { time: 149, img: 1, text: "Быстрые воспоминания..." }, // Быстрая прокрутка в конце
+            { time: 153, img: 4, text: "Быстрые воспоминания..." },
+            { time: 157, img: 7, text: "Быстрые воспоминания..." },
+            { time: 161, img: 10, text: "Быстрые воспоминания..." },
+            { time: 165, img: 13, text: "Быстрые воспоминания..." },
+            { time: 170, img: 15, text: "Быстрые воспоминания..." },
+            { time: 207, img: null, text: "finish" }
+        ];
+
+        startBtn.addEventListener('click', () => {
+            startScreen.style.opacity = '0';
+            setTimeout(() => startScreen.style.display = 'none', 1000);
+            audio.play();
+            startEngine();
+        });
+
+        function startEngine() {
+            audio.addEventListener('timeupdate', () => {
+                const current = audio.currentTime;
+                
+                // Ищем текущий элемент таймлайна
+                let activeBlock = timeline[0];
+                for (let i = 0; i < timeline.length; i++) {
+                    if (current >= timeline[i].time) {
+                        activeBlock = timeline[i];
+                    }
+                }
+
+                if (activeBlock.text === "finish") {
+                    // Финал шоу
+                    document.querySelectorAll('.slide').forEach(s => s.classList.remove('active', 'prev'));
+                    lyricsText.style.opacity = 0;
+                    finalScreen.style.opacity = 1;
+                    finalScreen.style.zIndex = 50;
+                    spawnHearts();
+                } else {
+                    // Рендерим слайд и текст
+                    if (activeBlock.text !== "Быстрые воспоминания...") {
+                        lyricsText.innerHTML = activeBlock.text;
+                    } else {
+                        lyricsText.innerHTML = "";
+                    }
+                    
+                    if (activeBlock.img) {
+                        changeSlide(activeBlock.img);
+                    }
+                }
+            });
+        }
+
+        let lastImgId = null;
+        function changeSlide(imgId) {
+            if (lastImgId === imgId) return;
+            
+            const currentActive = document.querySelector('.slide.active');
+            if (currentActive) {
+                currentActive.classList.remove('active');
+                currentActive.classList.add('prev');
+            }
+
+            const nextActive = document.getElementById(`slide${imgId}`);
+            if (nextActive) {
+                // Слегка рандомизируем поворот для эффекта небрежного эдита
+                const randomRotate = (Math.random() * 10 - 5).toFixed(1);
+                nextActive.style.transform = `scale(1.05) rotate(${randomRotate}deg)`;
+                nextActive.classList.remove('prev');
+                nextActive.classList.add('active');
+            }
+
+            // Чистим старые слайды из фона
+            document.querySelectorAll('.slide').forEach(s => {
+                if (s.id !== `slide${imgId}` && (!currentActive || s.id !== currentActive.id)) {
+                    s.classList.remove('prev');
+                }
+            });
+
+            lastImgId = imgId;
+        }
+
+        let heartInterval;
+        function spawnHearts() {
+            if (heartInterval) return;
+            heartInterval = setInterval(() => {
+                const heart = document.createElement('div');
+                heart.classList.add('heart');
+                heart.innerHTML = ['❤️','🌸','✨','🧸'][Math.floor(Math.random()*4)];
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                document.body.appendChild(heart);
+                setTimeout(() => heart.remove(), 4000);
+            }, 300);
+        }
+    </script>
+</body>
+</html>
